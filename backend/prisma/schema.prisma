@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  cargo     String
+  permissao String   // admin, gestor, operador, visualizador
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  entriesResponsavel      Entry[]        @relation("EntryResponsavel")
+  exitsResponsavelLib     Exit[]         @relation("ExitResponsavelLiberacao")
+  exitsSolicitante        Exit[]         @relation("ExitSolicitante")
+  returnsRecebimento      Return[]       @relation("ReturnResponsavelRecebimento")
+  notifications           Notification[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  descricao String?
+  icone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  items Item[]
+}
+
+model Item {
+  id                   String   @id @default(uuid())
+  nome                 String
+  descricao            String?
+  categoriaId          String
+  codigoBarras         String?  @unique
+  numeroSerie          String?
+  quantidadeTotal      Int      @default(0)
+  quantidadeDisponivel Int      @default(0)
+  quantidadeEmUso      Int      @default(0)
+  localizacao          String?
+  valorUnitario        Float?
+  fornecedor           String?
+  observacoes          String?
+  fotoUrl              String?
+  qrCode               String?  @unique
+  estoqueMinimo        Int?     @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relações
+  categoria Category @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  entries   Entry[]
+  exits     Exit[]
+
+  @@index([categoriaId])
+  @@index([codigoBarras])
+  @@index([qrCode])
+}
+
+model Entry {
+  id             String   @id @default(uuid())
+  itemId         String
+  quantidade     Int
+  valorTotal     Float?
+  notaFiscal     String?
+  fornecedor     String?
+  responsavelId  String
+  dataEntrada    DateTime @default(now())
+  observacoes    String?
+  createdAt      DateTime @default(now())
+
+  // Relações
+  item        Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  responsavel User @relation("EntryResponsavel", fields: [responsavelId], references: [id])
+
+  @@index([itemId])
+  @@index([responsavelId])
+  @@index([dataEntrada])
+}
+
+model Exit {
+  id                      String    @id @default(uuid())
+  itemId                  String
+  quantidade              Int
+  responsavelLiberacaoId  String
+  solicitanteId           String
+  destino                 String
+  motivoSaida             String
+  previsaoDevolucao       DateTime?
+  dataSaida               DateTime  @default(now())
+  status                  String    @default("em_uso") // em_uso, devolvido, baixado
+  observacoes             String?
+  createdAt               DateTime  @default(now())
+
+  // Relações
+  item                 Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  responsavelLiberacao User     @relation("ExitResponsavelLiberacao", fields: [responsavelLiberacaoId], references: [id])
+  solicitante          User     @relation("ExitSolicitante", fields: [solicitanteId], references: [id])
+  return               Return?
+
+  @@index([itemId])
+  @@index([responsavelLiberacaoId])
+  @@index([solicitanteId])
+  @@index([dataSaida])
+  @@index([status])
+}
+
+model Return {
+  id                        String   @id @default(uuid())
+  exitId                    String   @unique
+  dataDevolucao             DateTime @default(now())
+  condicao                  String   // perfeito, defeito, danificado
+  motivoDefeito             String?
+  necessitaReparo           Boolean  @default(false)
+  fotosDefeito              String?  // JSON array de URLs
+  responsavelRecebimentoId  String
+  observacoes               String?
+  createdAt                 DateTime @default(now())
+
+  // Relações
+  exit                    Exit @relation(fields: [exitId], references: [id], onDelete: Cascade)
+  responsavelRecebimento  User @relation("ReturnResponsavelRecebimento", fields: [responsavelRecebimentoId], references: [id])
+
+  @@index([exitId])
+  @@index([dataDevolucao])
+  @@index([condicao])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  tipo        String
+  titulo      String
+  mensagem    String
+  userId      String
+  lida        Boolean  @default(false)
+  dataCriacao DateTime @default(now())
+
+  // Relações
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([lida])
+  @@index([dataCriacao])
+}

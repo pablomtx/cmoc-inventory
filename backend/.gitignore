@@ -1,0 +1,9 @@
+node_modules/
+dist/
+uploads/
+*.log
+.env
+*.db
+*.db-journal
+prisma/migrations/
+.DS_Store
