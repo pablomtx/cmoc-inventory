@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Edit } from 'lucide-react';
 import Layout from '../../components/Layout/Layout';
 import { itemsApi } from '../../api/items';
 import { categoriesApi } from '../../api/categories';
@@ -11,7 +11,7 @@ const ItemsList = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: items = [], isLoading, refetch } = useQuery({
+  const { data: items = [], isLoading } = useQuery({
     queryKey: ['items', selectedCategory, search, statusFilter],
     queryFn: () =>
       itemsApi.getAll({
