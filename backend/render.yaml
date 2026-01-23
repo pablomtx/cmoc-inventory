@@ -2,7 +2,7 @@ services:
   - type: web
     name: cmoc-inventory-api
     env: node
-    buildCommand: npm install && npm run build && npx prisma generate && npx prisma migrate deploy && npm run prisma:seed
+    buildCommand: npm install && npm run build && npx prisma generate && npx prisma db push && npm run prisma:seed
     startCommand: npm start
     envVars:
       - key: NODE_ENV
