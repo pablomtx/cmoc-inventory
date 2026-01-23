@@ -96,7 +96,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <div className="card">
             <h3 className="card-header">Itens por Categoria</h3>
-            <div className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto">
+            <div className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto pr-2">
               {categories.map((category) => {
                 const categoryItems = items.filter(
                   (item) => item.categoriaId === category.id
@@ -126,7 +126,7 @@ const Dashboard = () => {
                 Nenhum item com estoque baixo
               </p>
             ) : (
-              <div className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto pr-2">
                 {itensEstoqueBaixo.slice(0, 5).map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
