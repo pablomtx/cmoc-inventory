@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import cron from 'node-cron';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -66,6 +67,20 @@ app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+
+  // Auto-ping para manter o servidor ativo no Render (a cada 10 minutos)
+  if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
+    cron.schedule('*/10 * * * *', async () => {
+      try {
+        const url = `${process.env.RENDER_EXTERNAL_URL}/api/health`;
+        const response = await fetch(url);
+        console.log(`🏓 Auto-ping: ${response.status} - ${new Date().toISOString()}`);
+      } catch (error) {
+        console.log('🏓 Auto-ping falhou:', error);
+      }
+    });
+    console.log('🏓 Auto-ping ativado (a cada 10 minutos)');
+  }
 });
 
 export default app;
